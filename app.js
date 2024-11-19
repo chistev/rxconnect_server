@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const registrationRoutes = require('./registration/registerRoute');
 const loginRoute = require('./login/route');
+const identifyRoute = require('./login/identify/route')
 
 const app = express();
 const PORT = 5000;
@@ -25,7 +26,8 @@ mongoose.connect(process.env.MONGO_URI)
     .catch((error) => console.error('Error connecting to MongoDB:', error));
 
 app.use('/api/register', registrationRoutes);  
-app.use('/api/login', loginRoute);  
+app.use('/api/login', loginRoute); 
+app.use('/api/login/reset-password', identifyRoute); 
 
 app.listen(PORT, () => {
     console.log(`Express server running at http://localhost:${PORT}`);
