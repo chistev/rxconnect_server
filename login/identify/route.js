@@ -1,7 +1,6 @@
 const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
-const mongoose = require('mongoose');
 const User = require('../../models/User');
 const PasswordResetRequest = require('../../models/identify/PasswordResetRequest');
 const router = express.Router();
@@ -77,7 +76,7 @@ router.post('/', async (req, res) => {
         });
         await resetRequest.save();
 
-        const emailResponse = await sendPasswordResetEmail(email, resetCode, user.firstName);
+        await sendPasswordResetEmail(email, resetCode, user.firstName);
 
         res.status(200).json({ message: 'Password reset email sent!' });
 
