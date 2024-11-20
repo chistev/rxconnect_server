@@ -20,7 +20,7 @@ const sendPasswordResetEmail = async (email, resetCode, firstName) => {
         templateId: 1,
         params: {
             reset_code: resetCode,
-            reset_link: `https://yourwebsite.com/reset-password?code=${resetCode}`,
+            reset_link: `http://localhost:5173/recover/password?code=${resetCode}`,
             firstname: firstName,
         },
         headers: {
