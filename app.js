@@ -1,8 +1,11 @@
 require('dotenv').config();
 const express = require('express');
+
 const registrationRoutes = require('./registration/registerRoute');
 const loginRoute = require('./login/route');
 const identifyRoute = require('./login/identify/route')
+const recoverRoute = require('./recover/route')
+
 const corsMiddleware = require('./config/corsConfig');
 const connectToDatabase = require('./config/dbConfig');
 
@@ -18,6 +21,7 @@ connectToDatabase();
 app.use('/api/register', registrationRoutes);  
 app.use('/api/login', loginRoute); 
 app.use('/api/login/reset-password', identifyRoute); 
+app.use('/api/login/reset-password/verify', recoverRoute); 
 
 app.listen(PORT, () => {
     console.log(`Express server running at http://localhost:${PORT}`);
