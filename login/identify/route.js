@@ -3,6 +3,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const User = require('../../models/User');
+const PasswordResetRequest = require('../../models/identify/PasswordResetRequest');
 const router = express.Router();
 
 const API_KEY = process.env.BREVO_API_KEY;
@@ -29,13 +30,7 @@ const sendPasswordResetEmail = async (email, resetCode, firstName) => {
         }
     };
 
-    console.log("Sending email to:", email);
-    console.log("Reset code:", resetCode);
-    console.log("User's first name:", firstName);
-
     try {
-        console.log("Making request to Brevo API...");
-
         const response = await axios.post(url, data, {
             headers: {
                 'accept': 'application/json',
@@ -43,51 +38,47 @@ const sendPasswordResetEmail = async (email, resetCode, firstName) => {
                 'content-type': 'application/json'
             }
         });
-
-        console.log('Email sent successfully:', response.data);
         return response.data;
     } catch (error) {
         if (error.response) {
-            // Log the full response from Brevo API to see error details
             console.error('Error sending email - Response:', error.response.data);
         } else {
-            // Log the error message if no response is received
             console.error('Error sending email - Message:', error.message);
         }
         throw new Error('Failed to send email');
     }
 };
 
-// Handle password reset request
 router.post('/', async (req, res) => {
     const { email } = req.body;
 
-    console.log("Received password reset request for email:", email);
-
-    // Basic email validation
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-        console.log('Invalid email address:', email);
         return res.status(400).json({ message: 'Invalid email address' });
     }
 
     try {
-        // Check if user exists in the database
         const user = await User.findOne({ email: email });
         if (!user) {
-            console.log("User not found with email:", email);
             return res.status(404).json({ message: 'Email address not found' });
         }
 
-        // Generate a random reset code (6-digit)
         const resetCode = crypto.randomInt(100000, 999999).toString();
-        console.log("Generated reset code:", resetCode);
 
-        // Send the reset code email with the user's first name
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 30);
+
+        // Delete any existing reset request for the user (to replace it with a new one)
+        await PasswordResetRequest.deleteOne({ email: email });
+
+        const resetRequest = new PasswordResetRequest({
+            email: email,
+            resetCode: resetCode,
+            expiresAt: expiresAt
+        });
+        await resetRequest.save();
+
         const emailResponse = await sendPasswordResetEmail(email, resetCode, user.firstName);
 
-        // Optionally, save the reset code and email to your DB if needed
-
-        console.log('Password reset email sent successfully:', emailResponse);
         res.status(200).json({ message: 'Password reset email sent!' });
 
     } catch (error) {
