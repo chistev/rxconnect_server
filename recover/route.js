@@ -1,7 +1,7 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const PasswordResetRequest = require('../models/identify/PasswordResetRequest');
 const User = require('../models/User');
+const { generateAndSetToken } = require('../utils/jwt');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
@@ -28,17 +28,7 @@ router.post('/', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '90m' });
-
-        // Set the JWT token as a HttpOnly cookie
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // Only send cookies over HTTPS in production
-            maxAge: 90 * 60 * 1000, // Token expiration time in milliseconds (90 minutes)
-            sameSite: 'Strict',
-        });
-
-        // Return success response
+        generateAndSetToken(res, user._id);
         res.status(200).json({ message: 'Security code verified successfully, you are logged in.' });
     } catch (error) {
         console.error('Error during password reset verification:', error);
