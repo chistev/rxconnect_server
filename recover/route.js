@@ -28,6 +28,8 @@ router.post('/', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        await PasswordResetRequest.deleteOne({ _id: resetRequest._id });
+
         generateAndSetToken(res, user._id);
         res.status(200).json({ message: 'Security code verified successfully, you are logged in.' });
     } catch (error) {
