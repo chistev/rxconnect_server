@@ -12,6 +12,7 @@ const logoutRoute = require('./feed/route');
 
 const corsMiddleware = require('./config/corsConfig');
 const connectToDatabase = require('./config/dbConfig');
+const validateJWT = require('./middlewares/validateJWT');
 
 const app = express();
 const PORT = 5000;
@@ -31,24 +32,8 @@ app.use('/api/login/reset-password/verify', recoverRoute);
 app.use('/api/login/change-password', recoverPasswordRoute); 
 app.use('/api/logout', logoutRoute);
 
-// JWT validation route
-app.get('/api/validate-jwt', (req, res) => {
-    // Retrieve token from cookies
-    const token = req.cookies.token;
-
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided' }); // No token sent by the client
-    }
-
-    // Validate the token
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: 'Invalid token' }); // Token is invalid or expired
-        }
-
-        // If valid, send back the user data (e.g., userId)
-        res.json({ userId: decoded.userId });
-    });
+app.get('/api/validate-jwt', validateJWT, (req, res) => {
+    res.json({ userId: req.userId });
 });
 
 app.listen(PORT, () => {
