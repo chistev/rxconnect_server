@@ -7,7 +7,8 @@ const loginRoute = require('./login/route');
 const identifyRoute = require('./login/identify/route')
 const recoverRoute = require('./recover/route')
 const recoverPasswordRoute = require('./recover/password/route')
-const logoutRoute = require('./feed/route');
+const logoutRoute = require('./feed/logoutRoute');
+const usersController = require('./feed/usersController');
 
 const corsMiddleware = require('./config/corsConfig');
 const connectToDatabase = require('./config/dbConfig');
@@ -37,15 +38,7 @@ app.get('/api/validate-jwt', validateJWT, (req, res) => {
     res.json({ userId: req.userId });
 });
 
-app.get('/api/users', async (req, res) => {
-    try {
-        const users = await User.find();  // Fetch all users from the database
-        res.json(users);  // Send the user data as a JSON response
-    } catch (err) {
-        console.error('Error fetching users:', err);
-        res.status(500).json({ error: 'Error fetching users' });
-    }
-});
+app.get('/api/users', validateJWT, usersController.getUsers);
 
 app.listen(PORT, () => {
     console.log(`Express server running at http://localhost:${PORT}`);
