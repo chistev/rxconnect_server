@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 
 const registrationRoutes = require('./registration/registerRoute');
@@ -13,6 +12,8 @@ const logoutRoute = require('./feed/route');
 const corsMiddleware = require('./config/corsConfig');
 const connectToDatabase = require('./config/dbConfig');
 const validateJWT = require('./middlewares/validateJWT');
+
+const User = require('./models/User');
 
 const app = express();
 const PORT = 5000;
@@ -34,6 +35,16 @@ app.use('/api/logout', logoutRoute);
 
 app.get('/api/validate-jwt', validateJWT, (req, res) => {
     res.json({ userId: req.userId });
+});
+
+app.get('/api/users', async (req, res) => {
+    try {
+        const users = await User.find();  // Fetch all users from the database
+        res.json(users);  // Send the user data as a JSON response
+    } catch (err) {
+        console.error('Error fetching users:', err);
+        res.status(500).json({ error: 'Error fetching users' });
+    }
 });
 
 app.listen(PORT, () => {
