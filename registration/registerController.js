@@ -29,13 +29,17 @@ async function registerUser(req, res) {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Generate a random profile picture URL (using Lorem Picsum)
+        const randomProfilePic = `https://picsum.photos/200/200?random=${Math.floor(Math.random() * 1000)}`;
+
         const user = new User({
             firstName,
             surname,
             dateOfBirth,
             gender,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            profilePic: randomProfilePic
         });
 
         await user.save();
@@ -46,5 +50,6 @@ async function registerUser(req, res) {
         res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 }
+
 
 module.exports = { registerUser };
